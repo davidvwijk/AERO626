@@ -1,0 +1,214 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>AERO626_hw2_dvw</title><meta name="generator" content="MATLAB 9.13"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2023-02-16"><meta name="DC.source" content="AERO626_hw2_dvw.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">AERO 626 Homework #2</a></li><li><a href="#2">Part A: Least-Squares Estimate of State</a></li><li><a href="#3">Part B: Weighted Least-Squares Estimate of State</a></li><li><a href="#4">Part C: Weighted Least-Squares Estimate with prior information</a></li><li><a href="#5">Part D: LUMVE of State</a></li></ul></div><h2 id="1">AERO 626 Homework #2</h2><p>Spring 2023 David van Wijk</p><pre class="codeinput">data = load(<span class="string">'data_HW02.mat'</span>);
+format <span class="string">long</span>
+
+<span class="comment">% DATA PROVIDED ARE:</span>
+<span class="comment">% T = (m x 1) array of measurement times [s]</span>
+<span class="comment">% Z = (m x 1) array of position measurements [m]</span>
+<span class="comment">% W = (m x 1) array of measurement weights [nd]</span>
+<span class="comment">% R = (m x 1) array of measurement noise covariances [m^2]</span>
+</pre><h2 id="2">Part A: Least-Squares Estimate of State</h2><pre class="codeinput">F = [0 1; -1 0];
+H_tilde = [1 0];
+H = [];
+<span class="keyword">for</span> i = 1:length(data.T)
+    Phi_i = expm(F*(data.T(i) - data.T(1)));
+    H_i = H_tilde*Phi_i;
+    H = [H; H_i];
+<span class="keyword">end</span>
+disp(<span class="string">'Least-Squares Estimate of Initial State using matrix exponential for Phi:'</span>)
+x_hat_0 = (H'*H)\(H'*data.Z)
+
+H = [];
+<span class="keyword">for</span> i = 1:length(data.T)
+    t_i = data.T(i);
+    Phi_i = [cos(t_i) sin(t_i); -sin(t_i) cos(t_i)];
+    H_i = H_tilde*Phi_i;
+    H = [H; H_i];
+<span class="keyword">end</span>
+disp(<span class="string">'Least-Squares Estimate of Initial State using analytical solution for Phi:'</span>)
+x_hat_0 = (H'*H)\(H'*data.Z)
+</pre><pre class="codeoutput">Least-Squares Estimate of Initial State using matrix exponential for Phi:
+
+x_hat_0 =
+
+   1.001143323295085
+  -0.005513909940539
+
+Least-Squares Estimate of Initial State using analytical solution for Phi:
+
+x_hat_0 =
+
+   1.001143323295085
+  -0.005513909940539
+
+</pre><h2 id="3">Part B: Weighted Least-Squares Estimate of State</h2><pre class="codeinput">W = diag(data.W);
+disp(<span class="string">'Weighted Least-Squares Estimate of Initial State:'</span>)
+x_hat_0 = (H'*W*H)\(H'*W*data.Z)
+</pre><pre class="codeoutput">Weighted Least-Squares Estimate of Initial State:
+
+x_hat_0 =
+
+   1.004569504535051
+  -0.007651308799164
+
+</pre><h2 id="4">Part C: Weighted Least-Squares Estimate with prior information</h2><pre class="codeinput">x_bar = [1; 0];
+W_bar = [3 0; 0 3];
+disp(<span class="string">'Weighted Least-Squares Estimate of Initial State using prior info:'</span>)
+x_hat_0 = (H'*W*H + W_bar)\(H'*W*data.Z + W_bar*x_bar)
+</pre><pre class="codeoutput">Weighted Least-Squares Estimate of Initial State using prior info:
+
+x_hat_0 =
+
+   1.004375010528215
+  -0.007340452622603
+
+</pre><h2 id="5">Part D: LUMVE of State</h2><pre class="codeinput">disp(<span class="string">'LUMVE of Initial State:'</span>)
+P_vv = diag(data.R);
+x_hat_0 = (H'*P_vv^-1*H)\(H'*P_vv^-1*data.Z)
+disp(<span class="string">'The uncertainty in our measurement can be evaluated using the covariance matrix of the estimate:'</span>)
+cov_matrix = (H'*P_vv^-1*H)^-1
+</pre><pre class="codeoutput">LUMVE of Initial State:
+
+x_hat_0 =
+
+   1.001143323295085
+  -0.005513909940539
+
+The uncertainty in our measurement can be evaluated using the covariance matrix of the estimate:
+
+cov_matrix =
+
+   1.0e-03 *
+
+   0.188443928965983  -0.006703912786495
+  -0.006703912786495   0.209123502754448
+
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% AERO 626 Homework #2
+% Spring 2023
+% David van Wijk
+
+data = load('data_HW02.mat');
+format long
+
+% DATA PROVIDED ARE:
+% T = (m x 1) array of measurement times [s]
+% Z = (m x 1) array of position measurements [m]
+% W = (m x 1) array of measurement weights [nd]
+% R = (m x 1) array of measurement noise covariances [m^2]
+
+%% Part A: Least-Squares Estimate of State
+
+F = [0 1; -1 0];
+H_tilde = [1 0];
+H = [];
+for i = 1:length(data.T)
+    Phi_i = expm(F*(data.T(i) - data.T(1)));
+    H_i = H_tilde*Phi_i;
+    H = [H; H_i];
+end
+disp('Least-Squares Estimate of Initial State using matrix exponential for Phi:')
+x_hat_0 = (H'*H)\(H'*data.Z)
+
+H = [];
+for i = 1:length(data.T)
+    t_i = data.T(i);
+    Phi_i = [cos(t_i) sin(t_i); -sin(t_i) cos(t_i)];
+    H_i = H_tilde*Phi_i;
+    H = [H; H_i];
+end
+disp('Least-Squares Estimate of Initial State using analytical solution for Phi:')
+x_hat_0 = (H'*H)\(H'*data.Z)
+
+%% Part B: Weighted Least-Squares Estimate of State
+
+W = diag(data.W);
+disp('Weighted Least-Squares Estimate of Initial State:')
+x_hat_0 = (H'*W*H)\(H'*W*data.Z)
+
+%% Part C: Weighted Least-Squares Estimate with prior information
+x_bar = [1; 0];
+W_bar = [3 0; 0 3];
+disp('Weighted Least-Squares Estimate of Initial State using prior info:')
+x_hat_0 = (H'*W*H + W_bar)\(H'*W*data.Z + W_bar*x_bar)
+
+%% Part D: LUMVE of State
+
+disp('LUMVE of Initial State:')
+P_vv = diag(data.R);
+x_hat_0 = (H'*P_vv^-1*H)\(H'*P_vv^-1*data.Z)
+disp('The uncertainty in our measurement can be evaluated using the covariance matrix of the estimate:')
+cov_matrix = (H'*P_vv^-1*H)^-1
+
+
+##### SOURCE END #####
+--></body></html>
