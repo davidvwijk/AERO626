@@ -6,11 +6,10 @@
 
 close all; clear; clc;
 plot_flag = true;
+xaxis_sz = 20; yaxis_sz = 20; legend_sz = 18;
 
 % Seed to reproduce results
-rng(10)
-
-xaxis_sz = 20; yaxis_sz = 20; legend_sz = 18;
+% rng(10)
 
 %% Part A - Initialization and Data Processing
 
@@ -39,21 +38,10 @@ m_full   = {m1x0,m2x0,m3x0,m4x0};
 Pxx_full = {P1xx0,P2xx0,P3xx0,P4xx0};
 
 % Sample an initial guess first by selecting the component of the GM and
-% then sampling that Gaussian
-sampleGaussian = rand;
-if sampleGaussian < w1
-    mx0 = m1x0 + diag(sqrt(P1xx0)).*randn(2,1);
-    Pxx0 = P1xx0;
-elseif sampleGaussian < w1 + w2
-    mx0 = m2x0 + diag(sqrt(P2xx0)).*randn(2,1);
-    Pxx0 = P2xx0;
-elseif sampleGaussian < w1 + w2 + w3
-    mx0 = m3x0 + diag(sqrt(P3xx0)).*randn(2,1);
-    Pxx0 = P3xx0;
-else
-    mx0 = m4x0 + diag(sqrt(P4xx0)).*randn(2,1);
-    Pxx0 = P4xx0;
-end
+% then sampling that Gaussian (we know its from the 4th Gaussian)
+
+mx0 = m4x0 + diag(sqrt(P4xx0)).*randn(2,1);
+Pxx0 = P4xx0;
 
 % NOTATION:
 %   tkm1   = t_{k-1}        time at the (k-1)th time
@@ -170,9 +158,9 @@ for i = 1:length(mxkm_full)
     mzkm  = Hx*mxkm;
     
     % compute baby Kalman gain
-    kk_l = mzkm + diag(sqrt(Pzzkm)).*randn(length(mzkm),1);
+    kk_l       = abs(2*pi*Pzzkm)^-.5*exp(-.5*(zk - mzkm)'*Pzzkm^-1*(zk - mzkm));
     kk_full{i} = kk_l;
-    wk_sum = wk_sum + kk_l*wxkm;
+    wk_sum     = wk_sum + kk_l*wxkm;
 end
 
 for i = 1:length(mxkm_full)
@@ -232,7 +220,7 @@ title('\textbf{State Estimation Error versus Measurement Number using GMF}','Fon
 a1 = plot(kxstore,exstore(1,:),err_line_opts{:});
 a2 = plot(kxstore,std_plot*sxstore(1,:),std_line_opts{:});
 plot(kxstore,-std_plot*sxstore(1,:),std_line_opts{:})
-ylabel('Position [distance]','Fontsize',yaxis_sz,'interpreter','latex')
+ylabel('Position [$distance$]','Fontsize',yaxis_sz,'interpreter','latex')
 legendtxt = {'Position Error',txt};
 legend([a1 a2],legendtxt,'FontSize',legend_sz,'interpreter','latex','location','southeast')
 
@@ -240,7 +228,7 @@ subplot(2,1,2); hold on;
 a1 = plot(kxstore,exstore(2,:),err_line_opts{:});
 a2 = plot(kxstore,std_plot*sxstore(2,:),std_line_opts{:});
 plot(kxstore,-std_plot*sxstore(2,:),std_line_opts{:})
-ylabel('Velocity [distance/sec]','Fontsize',yaxis_sz,'interpreter','latex')
+ylabel('Velocity [$\frac{distance}{sec}$]','Fontsize',yaxis_sz,'interpreter','latex')
 xlabel('Measurement number','Fontsize',xaxis_sz,'interpreter','latex')
 legendtxt = {'Velocity Error',txt};
 legend([a1 a2],legendtxt,'FontSize',legend_sz,'interpreter','latex','location','southeast')
