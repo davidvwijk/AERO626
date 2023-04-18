@@ -37,11 +37,8 @@ w_full   = {w1,w2,w3,w4};
 m_full   = {m1x0,m2x0,m3x0,m4x0};
 Pxx_full = {P1xx0,P2xx0,P3xx0,P4xx0};
 
-% Sample an initial guess first by selecting the component of the GM and
-% then sampling that Gaussian (we know its from the 4th Gaussian)
-
-mx0 = m4x0 + diag(sqrt(P4xx0)).*randn(2,1);
-Pxx0 = P4xx0;
+% Obtain initial mean and covarince
+[mx0, Pxx0] = getMeanCovfromGM(w_full,m_full,Pxx_full);
 
 % NOTATION:
 %   tkm1   = t_{k-1}        time at the (k-1)th time
@@ -62,6 +59,7 @@ kxstore = nan(1,2*numPts-1);
 mxstore = nan(2,2*numPts-1);
 exstore = nan(2,2*numPts-1);
 sxstore = nan(2,2*numPts-1);
+wxstore = nan(4,2*numPts-1);
 
 % declare storage space
 zcount  = 0;
@@ -74,6 +72,7 @@ kxstore(:,xcount) = 0;
 exstore(:,xcount) = x0 - mx0;
 mxstore(:,xcount) = mx0;
 sxstore(:,xcount) = sqrt(diag(Pxx0));
+wxstore(:,xcount) = cell2mat(w_full(:));
 
 for k = 1:numPts
     zk = z_full(k);     % current measurement to process
@@ -93,6 +92,7 @@ for k = 1:numPts
     mxstore(:,xcount) = mxGM_prior;
     exstore(:,xcount) = xk - mxGM_prior;
     sxstore(:,xcount) = sqrt(diag(PxxGM_prior));
+    wxstore(:,xcount) = cell2mat(wxkm_full(:));
 
     % update means and covariances of GM
     [wxkp_full, mxkp_full, Pxxkp_full] = updateMain(wxkm_full,mxkm_full,Pxxkm_full,Hx,zk,Pvv);
@@ -107,6 +107,7 @@ for k = 1:numPts
     mxstore(:,xcount) = mxGM_posterior;
     exstore(:,xcount) = xk - mxGM_posterior;
     sxstore(:,xcount) = sqrt(diag(PxxGM_posterior));
+    wxstore(:,xcount) = cell2mat(wxkp_full(:));
 
     % store measurement information for analysis
     zcount            = zcount + 1;
@@ -120,6 +121,7 @@ end
 
 if plot_flag
     plotEstimationError(exstore,sxstore,kxstore,xaxis_sz,yaxis_sz,legend_sz)
+    plotWeights(wxstore,kxstore,xaxis_sz,yaxis_sz,legend_sz)
 end
 
 %% Functions
@@ -215,7 +217,7 @@ err_line_opts = {'-','LineWidth',1.3};
 std_line_opts = {'-','LineWidth',1.3,'Color','k'};
 
 figure; grid on; set(gcf, 'WindowState', 'maximized'); 
-subplot(2,1,1); hold on;
+subplot(2,1,1); hold on; grid on;
 title('\textbf{State Estimation Error versus Measurement Number using GMF}','Fontsize',25,'interpreter','latex')
 a1 = plot(kxstore,exstore(1,:),err_line_opts{:});
 a2 = plot(kxstore,std_plot*sxstore(1,:),std_line_opts{:});
@@ -224,7 +226,7 @@ ylabel('Position [$distance$]','Fontsize',yaxis_sz,'interpreter','latex')
 legendtxt = {'Position Error',txt};
 legend([a1 a2],legendtxt,'FontSize',legend_sz,'interpreter','latex','location','southeast')
 
-subplot(2,1,2); hold on;
+subplot(2,1,2); hold on; grid on;
 a1 = plot(kxstore,exstore(2,:),err_line_opts{:});
 a2 = plot(kxstore,std_plot*sxstore(2,:),std_line_opts{:});
 plot(kxstore,-std_plot*sxstore(2,:),std_line_opts{:})
@@ -232,5 +234,26 @@ ylabel('Velocity [$\frac{distance}{sec}$]','Fontsize',yaxis_sz,'interpreter','la
 xlabel('Measurement number','Fontsize',xaxis_sz,'interpreter','latex')
 legendtxt = {'Velocity Error',txt};
 legend([a1 a2],legendtxt,'FontSize',legend_sz,'interpreter','latex','location','southeast')
+
+end
+
+function plotWeights(wxstore,kxstore,xaxis_sz,yaxis_sz,legend_sz)
+
+w1_line_opts = {'-','LineWidth',3,'Color','b'};
+w2_line_opts = {'-','LineWidth',3,'Color','g'};
+w3_line_opts = {'-','LineWidth',3,'Color','r'};
+w4_line_opts = {'-','LineWidth',3,'Color','k'};
+
+figure; set(gcf, 'WindowState', 'maximized'); 
+hold on; grid on;
+title('\textbf{Weights of GMF versus Measurement Number}','Fontsize',25,'interpreter','latex')
+a1 = plot(kxstore,wxstore(1,:),w1_line_opts{:});
+a2 = plot(kxstore,wxstore(2,:),w2_line_opts{:});
+a3 = plot(kxstore,wxstore(3,:),w3_line_opts{:});
+a4 = plot(kxstore,wxstore(4,:),w4_line_opts{:});
+ylabel('Weights','Fontsize',yaxis_sz,'interpreter','latex')
+legendtxt = {'w1','w2','w3','w4'};
+legend([a1 a2 a3 a4],legendtxt,'FontSize',legend_sz,'interpreter','latex','location','southeast')
+xlabel('Measurement number','Fontsize',xaxis_sz,'interpreter','latex')
 
 end
