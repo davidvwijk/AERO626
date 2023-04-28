@@ -9,7 +9,7 @@ close all; clear; clc;
 plot_flag = true;
 
 % Seed to reproduce results
-% rng(100)
+rng(100)
 
 xaxis_sz = 20; yaxis_sz = 20; legend_sz = 18;
 data = load('data_HW08.mat');
@@ -62,7 +62,6 @@ svstore = nan(1,numPts);
 % store initial data
 xcount            = xcount + 1;
 kxstore(:,xcount) = 0;
-xstore(:,xcount)  = x0;
 mxstore(:,xcount) = mx0;
 sxstore(:,xcount) = sqrt(diag(Pxx0));
 exstore(:,xcount) = data.x0 - mx0;
@@ -137,8 +136,8 @@ end
 
 % dxstoreEKF = dxstore;
 % rmsEKF     = sqrt((sum(ezstore(1:end-1).^2))/length(ezstore(1:end-1)));
-MAE_EKF  = mean(abs(exstore));
-RMSE_EKF = rms(exstore);
+mean(abs(exstore))
+rms(exstore)
 
 if plot_flag
     % Plot Innovations
@@ -171,7 +170,6 @@ N = 10000;
 % store initial data
 xcount              = xcount + 1;
 kxstore(:,xcount)   = 0;
-xstore(:,xcount)    = x0;
 mxstore(:,xcount)   = mxk0;
 sxstore(:,xcount)   = sqrt(diag(Pxx0));
 exstore(:,xcount)   = data.x0 - mxk0;
@@ -200,7 +198,7 @@ for k = 1:numPts
     kxstore(:,xcount) = k;
     mxstore(:,xcount) = mxkp;
     exstore(:,xcount) = xk - mxkp;
-    sxstore(:,xcount) = sqrt(sum(weights_p.*(particles_p-mxkp).^2));
+    sxstore(:,xcount) = sqrt(sum(weights_pPxxkp));
     Neffstore(:,xcount) = Neff;
 
     % initialize for next step
@@ -208,8 +206,8 @@ for k = 1:numPts
     weights_m   = weights_p;
     
 end
-MAE_PF1  = mean(abs(exstore));
-RMSE_PF1 = rms(exstore);
+mean(abs(exstore))
+rms(exstore)
 
 if plot_flag
     plotPart2_EstimationError(exstore,sxstore,numPts,xaxis_sz,yaxis_sz,legend_sz)
@@ -240,7 +238,6 @@ Nthresh = .1*N;
 % store initial data
 xcount              = xcount + 1;
 kxstore(:,xcount)   = 0;
-xstore(:,xcount)    = x0;
 mxstore(:,xcount)   = mxk0;
 sxstore(:,xcount)   = sqrt(diag(Pxx0));
 exstore(:,xcount)   = data.x0 - mxk0;
@@ -274,7 +271,7 @@ for k = 1:numPts
     kxstore(:,xcount) = k;
     mxstore(:,xcount) = mxkp;
     exstore(:,xcount) = xk - mxkp;
-    sxstore(:,xcount) = sqrt(sum(weights_p.*(particles_p-mxkp).^2));
+    % sxstore(:,xcount) = sqrt(diag(Pxxkp));
     Neffstore(:,xcount) = Neff;
 
     % initialize for next step
@@ -282,8 +279,8 @@ for k = 1:numPts
     weights_m   = weights_p;
     
 end
-MAE_PF2  = mean(abs(exstore));
-RMSE_PF2 = rms(exstore);
+mean(abs(exstore))
+rms(exstore)
 
 if plot_flag
     plotPart3_EstimationError(exstore,sxstore,numPts,xaxis_sz,yaxis_sz,legend_sz)
@@ -292,14 +289,7 @@ end
 
 %% Part 4 - Filter Comparison
 
-disp('EKF: RMSE  |  MAE')
-disp([RMSE_EKF MAE_EKF])
 
-disp('PF1: RMSE  |  MAE')
-disp([RMSE_PF1 MAE_PF1])
-
-disp('PF2: RMSE  |  MAE')
-disp([RMSE_PF2 MAE_PF2])
 
 %% Dynamics Functions
 
@@ -452,12 +442,12 @@ measx1 = [0 measx];
 figure; grid on; set(gcf, 'WindowState', 'maximized'); hold on;
 title('\textbf{State Estimation Error vs. Measurement Number using Particle Filter (no resampling)}','Fontsize',25,'interpreter','latex')
 a1 = plot(measx1,exstore(1,:),err_line_opts{:});
-a2 = plot(measx1,std_plot*sxstore(1,:),std_line_opts{:});
-plot(measx1,-std_plot*sxstore(1,:),std_line_opts{:})
+% a2 = plot(measx1,std_plot*sxstore(1,:),std_line_opts{:});
+% plot(measx1,-std_plot*sxstore(1,:),std_line_opts{:})
 ylabel('State','Fontsize',yaxis_sz,'interpreter','latex')
 xlabel('Measurement number','Fontsize',xaxis_sz,'interpreter','latex')
-legendtxt = {'Error',txt};
-legend([a1 a2],legendtxt,'FontSize',legend_sz,'interpreter','latex','location','southeast')
+% legendtxt = {'Error',txt};
+% legend([a1 a2],legendtxt,'FontSize',legend_sz,'interpreter','latex','location','southeast')
 
 end
 
@@ -489,12 +479,12 @@ measx1 = [0 measx];
 figure; grid on; set(gcf, 'WindowState', 'maximized'); hold on;
 title('\textbf{State Estimation Error vs. Measurement Number using Particle Filter with basic resampling}','Fontsize',25,'interpreter','latex')
 a1 = plot(measx1,exstore(1,:),err_line_opts{:});
-a2 = plot(measx1,std_plot*sxstore(1,:),std_line_opts{:});
-plot(measx1,-std_plot*sxstore(1,:),std_line_opts{:})
+% a2 = plot(measx1,std_plot*sxstore(1,:),std_line_opts{:});
+% plot(measx1,-std_plot*sxstore(1,:),std_line_opts{:})
 ylabel('State','Fontsize',yaxis_sz,'interpreter','latex')
 xlabel('Measurement number','Fontsize',xaxis_sz,'interpreter','latex')
-legendtxt = {'Error',txt};
-legend([a1 a2],legendtxt,'FontSize',legend_sz,'interpreter','latex','location','southeast')
+% legendtxt = {'Error',txt};
+% legend([a1 a2],legendtxt,'FontSize',legend_sz,'interpreter','latex','location','southeast')
 
 end
 

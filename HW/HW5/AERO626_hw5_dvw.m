@@ -216,7 +216,7 @@ if plot_flag
     a3 = line([0,measx(end)],[13.82 13.82],'LineStyle','--','Color','m','LineWidth',2);
     ylabel('Mahalanobis distance','Fontsize',yaxis_sz,'interpreter','latex')
     xlabel('Measurement number','Fontsize',xaxis_sz,'interpreter','latex')
-    legendtxt = {'MD Innov.', '$P_{G} = 95\%$', '$P_{G} = 99\%$', '$P_{G} = 99.9\%$'};
+    legendtxt = {'MD Innov.', '$P_{G} = z\%$', '$P_{G} = 99\%$', '$P_{G} = 99.9\%$'};
     legend([b1 a1 a2 a3],legendtxt,'FontSize',legend_sz,'interpreter','latex','location','northwest')
 
     % Plots for Part 4
