@@ -6,15 +6,17 @@
 
 close all; clear; clc;
 
-plot_flag = true;
+plot_flag = false;
 
 % Seed to reproduce results
 % rng(100)
 
-xaxis_sz = 20; yaxis_sz = 20; legend_sz = 18;
+xaxis_sz = 22; yaxis_sz = 22; legend_sz = 20;
 data = load('data_HW08.mat');
 
 %% Part 1 - EKF Implementation
+
+tic
 
 Pww  = .01^2;
 Pvv  = .02;
@@ -135,6 +137,8 @@ for k = 1:numPts
     Pxxkm1 = Pxxkp;
 end
 
+toc
+
 % dxstoreEKF = dxstore;
 % rmsEKF     = sqrt((sum(ezstore(1:end-1).^2))/length(ezstore(1:end-1)));
 MAE_EKF  = mean(abs(exstore));
@@ -149,6 +153,8 @@ if plot_flag
 end
 
 %% Part 2 - Bootstrap Particle Filter (no resampling)
+
+tic
 
 % declare storage space for saving state estimation error information
 xcount    = 0;
@@ -208,6 +214,9 @@ for k = 1:numPts
     weights_m   = weights_p;
     
 end
+
+toc
+
 MAE_PF1  = mean(abs(exstore));
 RMSE_PF1 = rms(exstore);
 
@@ -217,6 +226,8 @@ if plot_flag
 end
 
 %% Part 3 - Bootstrap Particle Filter (with resampling)
+
+tic
 
 % declare storage space for saving state estimation error information
 xcount    = 0;
@@ -282,8 +293,14 @@ for k = 1:numPts
     weights_m   = weights_p;
     
 end
+
+toc
+
 MAE_PF2  = mean(abs(exstore));
 RMSE_PF2 = rms(exstore);
+
+disp(' ')
+disp(['Resampling was performed ', num2str(resampling_counter), ' times'])
 
 if plot_flag
     plotPart3_EstimationError(exstore,sxstore,numPts,xaxis_sz,yaxis_sz,legend_sz)
@@ -357,11 +374,9 @@ N = length(weights_m);
 weights_p = zeros(size(weights_m));
 for i = 1:N
     xk       = particles_p(:,i);
-    % zk_tilde = measurementFunSingle(xk,Pvv); % No noise
     zk_tilde = measurementFunSingle(xk,0);
     wkm1     = weights_m(:,i);
     pw       = abs(2*pi*Pvv)^(-.5)*exp(-.5*(zk - zk_tilde)'*Pvv^-1*(zk - zk_tilde));
-    % pw       = exp(-.5*(zk - zk_tilde)'*Pvv^-1*(zk - zk_tilde));
     % pw       = normpdf(zk - zk_tilde,0,sqrt(Pvv));
     weights_p(:,i) = wkm1*pw;
 end
@@ -369,13 +384,13 @@ weights_p = weights_p/sum(weights_p);
 
 end
 
-function [weightedMean_particles] = calcWMeanParticles(particles,weights,N)
+function [mxk] = calcWMeanParticles(particles,weights,N)
 
-weightedMean_particles = 0;
+mxk = 0;
 for i = 1:N
     xk = particles(:,i);
     wk = weights(:,i);
-    weightedMean_particles = weightedMean_particles + xk*wk;
+    mxk = mxk + xk*wk;
 end
 
 end
@@ -450,7 +465,7 @@ std_line_opts = {'-','LineWidth',2,'Color','k'};
 measx1 = [0 measx];
 
 figure; grid on; set(gcf, 'WindowState', 'maximized'); hold on;
-title('\textbf{State Estimation Error vs. Measurement Number using Particle Filter (no resampling)}','Fontsize',25,'interpreter','latex')
+title('\textbf{State Estimation Error vs. Measurement Number using Particle Filter with No Resampling}','Fontsize',25,'interpreter','latex')
 a1 = plot(measx1,exstore(1,:),err_line_opts{:});
 a2 = plot(measx1,std_plot*sxstore(1,:),std_line_opts{:});
 plot(measx1,-std_plot*sxstore(1,:),std_line_opts{:})
@@ -469,7 +484,7 @@ err_line_opts = {'-','LineWidth',2};
 measx1 = [0 measx];
 
 figure; grid on; set(gcf, 'WindowState', 'maximized'); hold on;
-title('\textbf{$\hat{N}_{eff}$ vs. Measurement Number using Particle Filter (no resampling)}','Fontsize',25,'interpreter','latex')
+title('\textbf{$\hat{N}_{eff}$ vs. Measurement Number using Particle Filter with No Resampling}','Fontsize',25,'interpreter','latex')
 a1 = plot(measx1,Neffstore(1,:),err_line_opts{:});
 ylabel('Particles','Fontsize',yaxis_sz,'interpreter','latex')
 xlabel('Measurement number','Fontsize',xaxis_sz,'interpreter','latex')
@@ -487,7 +502,7 @@ std_line_opts = {'-','LineWidth',2,'Color','k'};
 measx1 = [0 measx];
 
 figure; grid on; set(gcf, 'WindowState', 'maximized'); hold on;
-title('\textbf{State Estimation Error vs. Measurement Number using Particle Filter with basic resampling}','Fontsize',25,'interpreter','latex')
+title('\textbf{State Estimation Error vs. Measurement Number using Particle Filter with Basic Resampling}','Fontsize',25,'interpreter','latex')
 a1 = plot(measx1,exstore(1,:),err_line_opts{:});
 a2 = plot(measx1,std_plot*sxstore(1,:),std_line_opts{:});
 plot(measx1,-std_plot*sxstore(1,:),std_line_opts{:})
@@ -506,7 +521,7 @@ err_line_opts = {'-','LineWidth',2};
 measx1 = [0 measx];
 
 figure; grid on; set(gcf, 'WindowState', 'maximized'); hold on;
-title('\textbf{$\hat{N}_{eff}$ vs. Measurement Number using Particle Filter with basic resampling}','Fontsize',25,'interpreter','latex')
+title('\textbf{$\hat{N}_{eff}$ vs. Measurement Number using Particle Filter with Basic Resampling}','Fontsize',25,'interpreter','latex')
 a1 = plot(measx1,Neffstore(1,:),err_line_opts{:});
 ylabel('Particles','Fontsize',yaxis_sz,'interpreter','latex')
 xlabel('Measurement number','Fontsize',xaxis_sz,'interpreter','latex')
